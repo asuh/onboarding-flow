@@ -1,0 +1,27 @@
+.link {
+  align-items: center;
+  display: flex;
+  height: 48px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  gap: 2rem;
+  justify-content: center;
+  padding: 1.5rem;
+
+  @media (width >= 768px) {
+    justify-content: start;
+  }
+}
+
+.link-text {
+  display: none;
+
+  @media (width >= 768px) {
+    display: block;
+  }
+}
+
+.active {
+  background-color: rgb(219, 232, 236);
+  color: darkcyan;
+}
