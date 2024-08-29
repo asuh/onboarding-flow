@@ -1,6 +1,8 @@
 import styles from "./page.module.css";
+import OnboardingWizard from './onboarding/OnboardingWizard';
 
 export default async function Home() {
+  const pageConfig = await [];
 
   // Prepare the steps based on the fetched page configuration
   const steps = [
@@ -13,7 +15,37 @@ export default async function Home() {
           <input type="password" name="password" />
         </fieldset>
       ),
-    }
+    },
+    ...pageConfig.map((config) => ({
+      component: (
+        <fieldset key={config.id}>
+          {config.component === 'address' && (
+            <div>
+              <label htmlFor="street">Street</label>
+              <input type="text" name="street" />
+              <label htmlFor="city">City</label>
+              <input type="text" name="city" />
+              <label htmlFor="state">State</label>
+              <input type="text" name="state" />
+              <label htmlFor="zip">Zip Code</label>
+              <input type="text" name="zip" />
+            </div>
+          )}
+          {config.component === 'birthdate' && (
+            <div>
+              <label htmlFor="birthdate">Birthdate</label>
+              <input type="date" name="birthdate" />
+            </div>
+          )}
+          {config.component === 'aboutMe' && (
+            <div>
+              <label htmlFor="aboutMe">About Me</label>
+              <textarea name="aboutMe" />
+            </div>
+          )}
+        </fieldset>
+      ),
+    })),
   ];
   
   return (
@@ -22,17 +54,7 @@ export default async function Home() {
         <h1>
           Onboarding Flow
         </h1>
-        <form action="#">
-          <legend>User Onboarding</legend>
-
-          {steps.map((step, index) => (
-            <div key={index}>
-              {step.component}
-            </div>
-          ))}
-          <button>Previous</button>
-          <button type="submit">Submit</button>
-        </form>
+        <OnboardingWizard steps={steps} />
       </div>
     </main>
   );
