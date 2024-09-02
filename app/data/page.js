@@ -16,7 +16,7 @@ export default async function DataPage() {
           <tr key={user.id}>
             <td>{user.email}</td>
             <td>{user.aboutMe}</td>
-            <td>{user.streetAddress}, {user.city}, {user.state} {user.zip}</td>
+            <td>{user.street}, {user.city}, {user.state} {user.zip}</td>
             <td>{user.birthdate ? user.birthdate.toISOString().split('T')[0] : ''}</td>
           </tr>
         ))}
