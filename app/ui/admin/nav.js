@@ -6,8 +6,8 @@ import './nav.css';
 
 // Map of links to display in the side navigation.
 const links = [
-  { name: 'Home', href: '/'},
   { name: 'Admin', href: '/admin' },
+  { name: 'Data', href: '/data'},
 ];
 
 export default function Nav() {

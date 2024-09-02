@@ -1,4 +1,4 @@
-export default async function DataPage() {
+export default async function Data() {
   const users = await prisma.user.findMany();
 
   return (

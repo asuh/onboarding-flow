@@ -1,0 +1,29 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+
+  @media (width >= 768px) {
+    flex-direction: row;
+  }
+}
+
+.sleeve {
+  flex: none;
+  width: 100%;
+
+  @media (width >= 768px) {
+    width: 16rem;
+  }
+}
+
+.torso {
+  flex-grow: 1;
+  padding: 1.5rem;
+
+  @media (width >= 768px) { 
+    padding: 3rem;
+    overflow-y: auto;
+  }
+}
