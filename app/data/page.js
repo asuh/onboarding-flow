@@ -6,18 +6,20 @@ export default async function Data() {
       <thead>
         <tr>
           <th>Email</th>
-          <th>About Me</th>
+          <th>Password</th>
           <th>Address</th>
           <th>Birthdate</th>
+          <th>About Me</th>
         </tr>
       </thead>
       <tbody>
         {users.map((user) => (
           <tr key={user.id}>
             <td>{user.email}</td>
-            <td>{user.aboutMe}</td>
+            <td>{user.password}</td>
             <td>{user.street}, {user.city}, {user.state} {user.zip}</td>
             <td>{user.birthdate ? user.birthdate.toISOString().split('T')[0] : ''}</td>
+            <td>{user.aboutMe}</td>
           </tr>
         ))}
       </tbody>

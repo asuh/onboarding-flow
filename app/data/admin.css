@@ -27,3 +27,22 @@
     overflow-y: auto;
   }
 }
+
+table {
+  background-color: #fff;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid;
+}
+
+th {
+  background-color: skyblue;
+  padding: 0.5rem;
+}
+
+td {
+  padding: 0.5rem;
+}
