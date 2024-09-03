@@ -54,13 +54,13 @@ export default function Page() {
           <legend>Step 2</legend>
           {fields.map(field => (
             <label key={field}>
+              {field.charAt(0).toUpperCase() + field.slice(1)}
               <input
                 type="checkbox"
                 checked={state.fieldset1[field]}
                 onChange={() => handleCheckboxChange('fieldset1', field)}
                 disabled={state.fieldset2[field]}
               />
-              {field.charAt(0).toUpperCase() + field.slice(1)}
             </label>
           ))}
         </fieldset>
@@ -69,13 +69,13 @@ export default function Page() {
           <legend>Step 3</legend>
           {fields.map(field => (
             <label key={field}>
+              {field.charAt(0).toUpperCase() + field.slice(1)}
               <input
                 type="checkbox"
                 checked={state.fieldset2[field]}
                 onChange={() => handleCheckboxChange('fieldset2', field)}
                 disabled={state.fieldset1[field]}
               />
-              {field.charAt(0).toUpperCase() + field.slice(1)}
             </label>
           ))}
         </fieldset>
