@@ -1,3 +1,7 @@
+.main {
+  background-color: #eee;
+}
+
 .sleeve-container {
   display: flex;
   flex-direction: column;
@@ -32,7 +36,6 @@
   display: flex;
   flex-grow: 1;
   flex-direction: row;
-  justify-content: space-between;
   gap: 1rem;
 
   @media (width >= 768px) {
@@ -42,7 +45,6 @@
 
 .sleeve-spacer {
   border-radius: 0.375rem;
-  background-color: #f0f0f0;
   display: none;
   flex-grow: 1;
   height: auto;

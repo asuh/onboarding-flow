@@ -13,15 +13,7 @@
   }
 }
 
-.link-text {
-  display: none;
-
-  @media (width >= 768px) {
-    display: block;
-  }
-}
-
 .active {
-  background-color: rgb(219, 232, 236);
-  color: darkcyan;
+  background-color: rgb(184, 228, 245);
+  color: rgb(3, 108, 108);
 }

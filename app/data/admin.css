@@ -31,7 +31,11 @@
 table {
   background-color: #fff;
   border-collapse: collapse;
-  width: 100%;
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  position: relative;
+  white-space: nowrap;
 }
 
 th, td {

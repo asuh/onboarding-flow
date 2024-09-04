@@ -133,7 +133,7 @@ export default function Wizard() {
         {step === 1 && <Step2 onChange={handleChange} errors={errors} formData={state.formData} />}
         {step === 2 && <Step3 onChange={handleChange} errors={errors} formData={state.formData} />}
         <button type="button" onClick={handlePrevious} disabled={step === 0}>Previous</button>
-        <button type={step === 2 ? 'submit' : 'button'} onClick={handleClick}>{step === 2 ? 'Submit' : 'Next'}</button>
+        <button className='next' type={step === 2 ? 'submit' : 'button'} onClick={handleClick}>{step === 2 ? 'Submit' : 'Next'}</button>
       </form>
     </>
   );

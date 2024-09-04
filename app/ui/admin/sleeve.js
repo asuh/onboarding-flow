@@ -5,11 +5,7 @@ import './sleeve.css';
 export default function Sleeve() {
   return (
     <div className="sleeve-container">
-      <Link
-        className="sleeve-header"
-        href="/"
-      >
-      </Link>
+      <div className="sleeve-header"></div>
       <div className="sleeve-nav">
         <Nav />
         <div className="sleeve-spacer"></div>

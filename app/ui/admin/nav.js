@@ -6,6 +6,7 @@ import './nav.css';
 
 // Map of links to display in the side navigation.
 const links = [
+  { name: 'Onboarding', href: '/' },
   { name: 'Admin', href: '/admin' },
   { name: 'Data', href: '/data'},
 ];

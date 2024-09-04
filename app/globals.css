@@ -154,6 +154,10 @@ button {
   user-select: none;
 }
 
+button.next {
+  background: rgb(184, 228, 245);
+}
+
 .error {
   background-color: color-mix(in srgb, red 50%, transparent);
   color: white;
