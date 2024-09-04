@@ -1,5 +1,7 @@
 import prisma from '@/app/api/submit/route';
 
+export const dynamic = 'force-dynamic'
+
 export default async function Data() {
   const users = await prisma.user.findMany();
 
