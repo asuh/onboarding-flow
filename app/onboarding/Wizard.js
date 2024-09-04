@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useReducer } from 'react';
+import { useRouter } from 'next/navigation';
 import Step1 from './Steps/Step1';
 import Step2 from './Steps/Step2';
 import Step3 from './Steps/Step3';
@@ -50,6 +51,7 @@ function reducer(state, action) {
 export default function Wizard() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [errors, setErrors] = useState({});
+  const router = useRouter();
 
   const validate = () => {
     const newErrors = {};
@@ -110,9 +112,10 @@ export default function Wizard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
+      router.push('/data')
     } catch (error) {
       console.error(error);
-    }    
+    }
     // dispatch({ type: 'reset' });
   };
 
