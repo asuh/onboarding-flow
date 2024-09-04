@@ -18,10 +18,9 @@ const initialState = {
 
 const fields = ['aboutMe', 'address', 'birthdate'];
 
-export default function Page() {
+export default function Admin() {
   const [state, setState] = useState(initialState);
 
-  // Handler for checkbox change
   const handleCheckboxChange = (fieldset, key) => {
     setState(prevState => {
       const newState = {

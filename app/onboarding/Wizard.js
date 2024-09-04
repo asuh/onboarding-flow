@@ -120,7 +120,11 @@ export default function Wizard() {
 
   return (
     <>
-      <div className="steps">{step === 0 && 'Step 1'}{step === 1 && 'Step 2'}{step === 2 && 'Step 3'}</div>
+      <div className="steps">
+        {step === 0 && 'Step 1'}
+        {step === 1 && 'Step 2'}
+        {step === 2 && 'Step 3'}
+      </div>
       <form onSubmit={handleSubmit}>
         {step === 0 && <Step1 onChange={handleChange} errors={errors} formData={state.formData} />}
         {step === 1 && <Step2 onChange={handleChange} errors={errors} formData={state.formData} />}

@@ -1,4 +1,3 @@
-'use client';
 import Address from '@/components/Address';
 import Birthdate from '@/components/Birthdate';
 
