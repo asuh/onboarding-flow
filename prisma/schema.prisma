@@ -18,9 +18,3 @@ model User {
   zip         String?
   birthdate   DateTime?
 }
-
-model Admin {
-  id          Int      @id @default(autoincrement())
-  pageNumber  Int
-  component   String
-}

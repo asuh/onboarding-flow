@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '@/app/api/submit/route';
 
 export default async function Data() {
   const users = await prisma.user.findMany();
