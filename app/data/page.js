@@ -1,4 +1,4 @@
-import prisma from '@/app/api/submit/route';
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic'
 
