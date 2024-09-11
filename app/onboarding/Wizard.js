@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useReducer } from 'react';
+import { useState, useReducer, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Step1 from './Steps/Step1';
-import Step2 from './Steps/Step2';
-import Step3 from './Steps/Step3';
+import AboutMe from '@/components/AboutMe';
+import Address from '@/components/Address';
+import Birthdate from '@/components/Birthdate';
+import Login from '@/components/Login';
 import './index.css';
 
 const initialState = {
@@ -19,7 +20,7 @@ const initialState = {
     zip: '',
     birthdate: '',
   }
-};
+}
 
 function reducer(state, action) {
   switch (action.type) {
@@ -50,46 +51,62 @@ function reducer(state, action) {
 
 export default function Wizard() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [pageConfig, setPageConfig] = useState([]);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const validate = () => {
-    const newErrors = {};
-    if (step === 0) {
-      if (!formData.email) newErrors.email = 'Email is required';
-      if (!formData.password) newErrors.password = 'Password is required';
-    }
+  const { step, formData } = state;
 
-    if (step === 1) {
-      if (!formData.street) newErrors.street = 'Street is required';
-      if (!formData.city) newErrors.city = 'City is required';
-      if (!formData.state) newErrors.state = 'State is required';
-      if (!formData.zip) newErrors.zip = 'Zip code is required';
-      if (!formData.birthdate) newErrors.birthdate = 'Birthdate is required';
-    }
+  // const isValid = () => {
+  //   const newErrors = {};
+  //   if (!formData.email) newErrors.email = 'Email is required';
+  //   if (!formData.password) newErrors.password = 'Password is required';
+  //   if (!formData.street) newErrors.street = 'Street is required';
+  //   if (!formData.city) newErrors.city = 'City is required';
+  //   if (!formData.state) newErrors.state = 'State is required';
+  //   if (!formData.zip) newErrors.zip = 'Zip code is required';
+  //   if (!formData.birthdate) newErrors.birthdate = 'Birthdate is required';
+  //   if (!formData.aboutMe) newErrors.aboutMe = 'About me is required';
 
-    if (step === 2) {
-      if (!formData.aboutMe) newErrors.aboutMe = 'About me is required';
-    }
+  //   setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
+  useEffect(() => {
+    let ignore = false;
 
-  const handleClick = (event) => {
-    event.preventDefault();
+    const fetchConfig = async () => {
+      setLoading(true)
+      setErrors({})
 
-    if (validate()) {
-      if (step === 2) {
-        handleSubmit(event);
+      const response = await fetch(`/api/admin?pageNumber=${step}`);
+      console.log({ response });
+      const config = await response.json();
+
+      if (ignore) {
+        return
       } else {
-        handleNext();
+        setPageConfig(config)
       }
-    }
-  }
 
-  const handleNext = () => {
-    dispatch({ type: 'next_step' });
+      setLoading(false)
+    }
+
+    fetchConfig();
+
+    return () => { ignore = true };
+  }, [step]);
+  
+  const handleNext = (e) => {
+    // if (isValid()) {
+      if (step === 2) {
+        handleSubmit(e)
+        return
+      }
+
+      dispatch({ type: 'next_step' });
+    // }
   };
 
   const handlePrevious = () => {
@@ -119,19 +136,27 @@ export default function Wizard() {
     // dispatch({ type: 'reset' });
   };
 
-  const { step, formData } = state;
-
   return (
     <>
       <div className="steps">
         {`Step ${step + 1} of 3`}
       </div>
+      {loading && <p>'Loading...'</p>}
       <form onSubmit={handleSubmit}>
-        {step === 0 && <Step1 onChange={handleChange} errors={errors} formData={state.formData} />}
-        {step === 1 && <Step2 onChange={handleChange} errors={errors} formData={state.formData} />}
-        {step === 2 && <Step3 onChange={handleChange} errors={errors} formData={state.formData} />}
+        {step === 0 && (<Login onChange={handleChange} errors={errors} formData={state.formData} />)}
+        {step > 0 && pageConfig.map(config => {
+          if (config.component === 'aboutMe') {
+            return <AboutMe key={config.component} onChange={handleChange} errors={errors} formData={state.formData} />
+          }
+          if (config.component === 'address') {
+            return <Address key={config.component} onChange={handleChange} errors={errors} formData={state.formData} />
+          }
+          if (config.component === 'birthdate') {
+            return <Birthdate key={config.component} onChange={handleChange} errors={errors} formData={state.formData} />
+          }
+        })}
         <button type="button" onClick={handlePrevious} disabled={step === 0}>Previous</button>
-        <button className='next' type={step === 2 ? 'submit' : 'button'} onClick={handleClick}>{step === 2 ? 'Submit' : 'Next'}</button>
+        <button className="next" type="button" onClick={handleNext}>{step === 2 ? 'Submit' : 'Next'}</button>
       </form>
     </>
   );
