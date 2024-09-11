@@ -3,6 +3,8 @@ import { updateConfig } from '@/actions/actions';
 import './admin.css'
 import { fetchInitialAdminFields } from '@/actions/actions';
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Admin page
  *
