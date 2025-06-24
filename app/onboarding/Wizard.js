@@ -6,24 +6,18 @@ import AboutMe from '@/components/AboutMe';
 import Address from '@/components/Address';
 import Birthdate from '@/components/Birthdate';
 import Login from '@/components/Login';
-import './index.css';
+import styles from './index.css';
 
-// Cache for page configurations
-const pageConfigCache = new Map();
-
-async function fetchPageConfig(step) {
-  if (pageConfigCache.has(step)) {
-    return pageConfigCache.get(step);
+const fetchPageConfig = async (step) => {
+  try {
+    const res = await fetch(`/api/admin?page=${step}`);
+    if (!res.ok) throw new Error('Failed to fetch page config');
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching page config:', error);
+    return { components: [] };
   }
-
-  const response = await fetch(`/api/admin?pageNumber=${step}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch page config');
-  }
-  const config = await response.json();
-  pageConfigCache.set(step, config);
-  return config;
-}
+};
 
 const initialState = {
   step: 0,
@@ -36,154 +30,229 @@ const initialState = {
     state: '',
     zip: '',
     birthdate: '',
-  }
-}
+  },
+  config: { components: [] },
+  isLoading: true,
+  error: null,
+};
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'next_step':
-      return { 
-        ...state,
-        step: state.step + 1 
-      }
-    case 'prev_step':
-      return { 
-        ...state,
-        step: state.step - 1
-      }
-    case 'change':
+    case 'SET_STEP':
+      return { ...state, step: action.payload };
+    case 'UPDATE_FORM_DATA':
       return {
         ...state,
-        formData: {
-          ...state.formData,
-          [action.name]: action.value
-        }
+        formData: { ...state.formData, ...action.payload },
       };
-    case 'reset':
-      return initialState;
+    case 'SET_CONFIG':
+      return { ...state, config: action.payload, isLoading: false };
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload, isLoading: false };
     default:
       return state;
   }
 }
 
 function WizardContent({ initialStep = 0 }) {
-  const [state, dispatch] = useReducer(reducer, { ...initialState, step: initialStep });
-  const [errors, setErrors] = useState({});
+  const [state, dispatch] = useReducer(reducer, {
+    ...initialState,
+    step: initialStep,
+  });
+  const { step, formData, config, isLoading, error } = state;
+  const [validationErrors, setValidationErrors] = useState({});
   const router = useRouter();
-  const { step, formData } = state;
-  
-  // Prefetch next page config when step changes
-  useEffect(() => {
-    if (step < 2) { // Only prefetch if not on last step
-      fetchPageConfig(step + 1).catch(console.error);
-    }
-  }, [step]);
-  
-  // State for page config and loading states
-  const [pageConfig, setPageConfig] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Fetch config for current step
   useEffect(() => {
     const loadConfig = async () => {
-      setIsLoading(true);
-      setError(null);
       try {
+        dispatch({ type: 'SET_LOADING', payload: true });
         const config = await fetchPageConfig(step);
-        setPageConfig(config);
+        dispatch({ type: 'SET_CONFIG', payload: config });
       } catch (err) {
-        console.error('Failed to load page config:', err);
-        setError('Failed to load form. Please refresh the page.');
-      } finally {
-        setIsLoading(false);
+        dispatch({ type: 'SET_ERROR', payload: err.message });
       }
     };
 
     loadConfig();
   }, [step]);
 
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  // const isValid = () => {
-  //   const newErrors = {};
-  //   if (!formData.email) newErrors.email = 'Email is required';
-  //   if (!formData.password) newErrors.password = 'Password is required';
-  //   if (!formData.street) newErrors.street = 'Street is required';
-  //   if (!formData.city) newErrors.city = 'City is required';
-  //   if (!formData.state) newErrors.state = 'State is required';
-  //   if (!formData.zip) newErrors.zip = 'Zip code is required';
-  //   if (!formData.birthdate) newErrors.birthdate = 'Birthdate is required';
-  //   if (!formData.aboutMe) newErrors.aboutMe = 'About me is required';
-
-  //   setErrors(newErrors);
-  //   return Object.keys(newErrors).length === 0;
-  // }
-
-  const handleNext = (e) => {
-    // if (isValid()) {
-      if (step === 2) {
-        handleSubmit(e)
-        return
-      }
-
-      dispatch({ type: 'next_step' });
-    // }
+  const nextStep = () => {
+    dispatch({ type: 'SET_STEP', payload: step + 1 });
+    window.scrollTo(0, 0);
   };
 
-  const handlePrevious = () => {
-    dispatch({ type: 'prev_step' });
+  const prevStep = () => {
+    dispatch({ type: 'SET_STEP', payload: step - 1 });
+    window.scrollTo(0, 0);
   };
 
   const handleChange = (e) => {
-    dispatch({ 
-      type: 'change',
-      name: e.target.name, 
-      value: e.target.value, 
-    })
+    const { name, value } = e.target;
+    dispatch({ type: 'UPDATE_FORM_DATA', payload: { [name]: value } });
+    // Clear validation error when user types
+    if (validationErrors[name]) {
+      setValidationErrors({
+        ...validationErrors,
+        [name]: null
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    
+    // Login step validation
+    if (step === 0) {
+      if (!formData.email) {
+        errors.email = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        errors.email = 'Email is invalid';
+      }
+      if (!formData.password) {
+        errors.password = 'Password is required';
+      } else if (formData.password.length < 6) {
+        errors.password = 'Password must be at least 6 characters';
+      }
+    }
+    
+    // About Me step validation
+    if (step === 1 && !formData.aboutMe?.trim()) {
+      errors.aboutMe = 'Please tell us about yourself';
+    }
+    
+    // Address step validation
+    if (step === 2) {
+      if (!formData.street?.trim()) errors.street = 'Street is required';
+      if (!formData.city?.trim()) errors.city = 'City is required';
+      if (!formData.state?.trim()) errors.state = 'State is required';
+      if (!formData.zip?.trim()) {
+        errors.zip = 'ZIP code is required';
+      } else if (!/^\d{5}(-\d{4})?$/.test(formData.zip)) {
+        errors.zip = 'Invalid ZIP code format';
+      }
+    }
+    
+    // Birthdate step validation
+    if (step === 3) {
+      if (!formData.birthdate) {
+        errors.birthdate = 'Birthdate is required';
+      } else {
+        const birthDate = new Date(formData.birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 18) {
+          errors.birthdate = 'You must be at least 18 years old';
+        } else if (age > 120) {
+          errors.birthdate = 'Please enter a valid birthdate';
+        }
+      }
+    }
+    
+    return errors;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
+    // Validate form before submission
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    
     try {
-      await fetch('/api/submit', {
+      const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      router.push('/data')
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit form');
+      }
+      
+      router.push('/data');
+      router.refresh();
     } catch (error) {
-      console.error(error);
+      alert(`Error submitting form: ${error.message}`);
     }
-    // dispatch({ type: 'reset' });
   };
+  
+  const handleNext = (e) => {
+    e.preventDefault();
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    nextStep();
+  };
+
+  const renderStep = () => {
+    const commonProps = {
+      formData,
+      onChange: handleChange,
+      errors: validationErrors
+    };
+
+    switch (step) {
+      case 0:
+        return <Login {...commonProps} />;
+      case 1:
+        return <AboutMe {...commonProps} />;
+      case 2:
+        return <Address {...commonProps} />;
+      case 3:
+        return <Birthdate {...commonProps} />;
+      default:
+        return null;
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading form: {error}</div>;
+  }
 
   return (
     <>
       <div className="steps">
-        {`Step ${step + 1} of 3`}
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className={`step ${i === step ? 'active' : ''} ${i < step ? 'completed' : ''}`}>
+            {i + 1}
+          </div>
+        ))}
       </div>
-      <form onSubmit={handleSubmit}>
-        {step === 0 && (<Login onChange={handleChange} errors={errors} formData={state.formData} />)}
-        {step > 0 && pageConfig.map(config => {
-          if (config.component === 'aboutMe') {
-            return <AboutMe key={config.component} onChange={handleChange} errors={errors} formData={state.formData} />
-          }
-          if (config.component === 'address') {
-            return <Address key={config.component} onChange={handleChange} errors={errors} formData={state.formData} />
-          }
-          if (config.component === 'birthdate') {
-            return <Birthdate key={config.component} onChange={handleChange} errors={errors} formData={state.formData} />
-          }
-        })}
-        <button type="button" onClick={handlePrevious} disabled={step === 0}>Previous</button>
-        <button className="next" type="button" onClick={handleNext}>{step === 2 ? 'Submit' : 'Next'}</button>
+
+      <form onSubmit={step === 3 ? handleSubmit : handleNext}>
+        <div className="form-container">
+          {renderStep()}
+          <div className="button-group">
+            {step > 0 && (
+              <button type="button" onClick={prevStep} className="btn btn-secondary">
+                Back
+              </button>
+            )}
+            <button type="submit" className="btn btn-primary">
+              {step === 3 ? 'Submit' : 'Next'}
+            </button>
+          </div>
+        </div>
       </form>
     </>
   );
@@ -191,9 +260,8 @@ function WizardContent({ initialStep = 0 }) {
 
 function LoadingSpinner() {
   return (
-    <div className="loading-spinner">
+    <div className="spinner-container">
       <div className="spinner"></div>
-      <p>Loading...</p>
     </div>
   );
 }

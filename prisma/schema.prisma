@@ -8,8 +8,8 @@ generator client {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  email       String   @unique
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
   password    String
   aboutMe     String?
   street      String?
@@ -17,6 +17,8 @@ model User {
   state       String?
   zip         String?
   birthdate   DateTime?
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
 }
 
 model Admin {
