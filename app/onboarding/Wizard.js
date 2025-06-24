@@ -1,12 +1,29 @@
 'use client';
 
-import { useState, useReducer, useEffect } from 'react';
+import { useState, useReducer, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import AboutMe from '@/components/AboutMe';
 import Address from '@/components/Address';
 import Birthdate from '@/components/Birthdate';
 import Login from '@/components/Login';
 import './index.css';
+
+// Cache for page configurations
+const pageConfigCache = new Map();
+
+async function fetchPageConfig(step) {
+  if (pageConfigCache.has(step)) {
+    return pageConfigCache.get(step);
+  }
+
+  const response = await fetch(`/api/admin?pageNumber=${step}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch page config');
+  }
+  const config = await response.json();
+  pageConfigCache.set(step, config);
+  return config;
+}
 
 const initialState = {
   step: 0,
@@ -49,14 +66,50 @@ function reducer(state, action) {
   }
 }
 
-export default function Wizard() {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const [pageConfig, setPageConfig] = useState([]);
+function WizardContent({ initialStep = 0 }) {
+  const [state, dispatch] = useReducer(reducer, { ...initialState, step: initialStep });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
-
   const { step, formData } = state;
+  
+  // Prefetch next page config when step changes
+  useEffect(() => {
+    if (step < 2) { // Only prefetch if not on last step
+      fetchPageConfig(step + 1).catch(console.error);
+    }
+  }, [step]);
+  
+  // State for page config and loading states
+  const [pageConfig, setPageConfig] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch config for current step
+  useEffect(() => {
+    const loadConfig = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const config = await fetchPageConfig(step);
+        setPageConfig(config);
+      } catch (err) {
+        console.error('Failed to load page config:', err);
+        setError('Failed to load form. Please refresh the page.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, [step]);
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   // const isValid = () => {
   //   const newErrors = {};
@@ -73,31 +126,6 @@ export default function Wizard() {
   //   return Object.keys(newErrors).length === 0;
   // }
 
-  useEffect(() => {
-    let ignore = false;
-
-    const fetchConfig = async () => {
-      setLoading(true)
-      setErrors({})
-
-      const response = await fetch(`/api/admin?pageNumber=${step}`);
-      console.log({ response });
-      const config = await response.json();
-
-      if (ignore) {
-        return
-      } else {
-        setPageConfig(config)
-      }
-
-      setLoading(false)
-    }
-
-    fetchConfig();
-
-    return () => { ignore = true };
-  }, [step]);
-  
   const handleNext = (e) => {
     // if (isValid()) {
       if (step === 2) {
@@ -141,7 +169,6 @@ export default function Wizard() {
       <div className="steps">
         {`Step ${step + 1} of 3`}
       </div>
-      {loading && <p>'Loading...'</p>}
       <form onSubmit={handleSubmit}>
         {step === 0 && (<Login onChange={handleChange} errors={errors} formData={state.formData} />)}
         {step > 0 && pageConfig.map(config => {
@@ -160,4 +187,21 @@ export default function Wizard() {
       </form>
     </>
   );
-};
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="loading-spinner">
+      <div className="spinner"></div>
+      <p>Loading...</p>
+    </div>
+  );
+}
+
+export default function Wizard() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <WizardContent />
+    </Suspense>
+  );
+}
