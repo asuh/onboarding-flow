@@ -36,49 +36,43 @@ export default function Data() {
   }
   
   if (error) {
-    return (
-      <div className="error-message">
-        <p>Error loading user data: {error}</p>
-        <p>Please try again later or check the server logs.</p>
-      </div>
-    );
+    return <div className="error-message">
+      <p>Error loading user data: {error}</p>
+      <p>Please try again later or check the server logs.</p>
+    </div>;
   }
 
   if (users.length === 0) {
     return <p>No users found. Submit the form to add a new user.</p>;
   }
 
-  return (
-    <div className="data-container">
-      <h1>User Data</h1>
-      <div className="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Password</th>
-              <th>Address</th>
-              <th>Birthdate</th>
-              <th>About Me</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => {
-              const userData = transformUserData(user);
-              
-              return (
-                <tr key={user.id}>
-                  <td>{userData.email}</td>
-                  <td>{'•'.repeat(8)}</td> {/* Don't show actual passwords */}
-                  <td>{formatAddress(userData)}</td>
-                  <td>{userData.birthdate}</td>
-                  <td>{userData.aboutMe}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+  return <div className="data-container">
+    <h1>User Data</h1>
+    <div className="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Password</th>
+            <th>Address</th>
+            <th>Birthdate</th>
+            <th>About Me</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => {
+            const userData = transformUserData(user);
+            
+            return <tr key={user.id}>
+              <td>{userData.email}</td>
+              <td>{'•'.repeat(8)}</td>
+              <td>{formatAddress(userData)}</td>
+              <td>{userData.birthdate}</td>
+              <td>{userData.aboutMe}</td>
+            </tr>;
+          })}
+        </tbody>
+      </table>
     </div>
-  );
+  </div>;
 }
